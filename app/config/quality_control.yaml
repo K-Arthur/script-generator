@@ -1,0 +1,33 @@
+validation:
+  readability:
+    min_flesch_score: 65
+    max_sentence_length: 25
+    preferred_paragraph_length: 3
+
+  structure:
+    min_word_count: 1500
+    max_section_length: 500
+    required_sections:
+      - introduction
+      - main_content
+      - conclusion
+
+  style:
+    banned_transitions:
+      - "in conclusion"
+      - "moving on"
+      - "furthermore"
+    required_elements:
+      - cultural_reference
+      - historical_parallel
+      - callback
+
+  coherence:
+    max_context_distance: 3
+    min_proper_noun_repetition: 2
+    callback_frequency: 500
+
+error_handling:
+  max_retries: 3
+  backoff_factor: 1.5
+  error_threshold: 0.8
