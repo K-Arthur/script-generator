@@ -1,21 +1,29 @@
 import React from 'react';
-import { Container, AppBar, Toolbar, Typography, Box } from '@mui/material';
+import { ThemeProvider, createTheme } from '@mui/material';
+import CssBaseline from '@mui/material/CssBaseline';
 import ScriptEditor from './components/ScriptEditor';
+
+const theme = createTheme({
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '#1976d2',
+    },
+    secondary: {
+      main: '#dc004e',
+    },
+  },
+  typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+  },
+});
 
 function App() {
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            AI Script Generator
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <ScriptEditor />
-      </Container>
-    </Box>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <ScriptEditor />
+    </ThemeProvider>
   );
 }
 

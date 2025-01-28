@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 from typing import Optional, List, Dict
 import asyncio
@@ -30,6 +30,7 @@ active_tasks = {}
 
 class ScriptRequest(BaseModel):
     content: str
+    template_name: Optional[str] = None
     highlighted_concept: Optional[str] = None
     previous_topic: Optional[str] = None
 
@@ -40,9 +41,24 @@ class ScriptResponse(BaseModel):
     validation: Optional[Dict] = None
     error: Optional[str] = None
 
+@app.get("/api/templates")
+async def get_templates():
+    """Get available script templates."""
+    try:
+        templates = text_processor.templates
+        return JSONResponse({
+            "status": "success",
+            "templates": templates
+        })
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching templates: {str(e)}"
+        )
+
 @app.post("/api/generate-script", response_model=ScriptResponse)
 async def generate_script(request: ScriptRequest, background_tasks: BackgroundTasks):
-    """Generate a script from the provided content."""
+    """Generate a script from the provided content using optional template."""
     task_id = str(len(active_tasks))
     
     async def process_script():
@@ -56,17 +72,29 @@ async def generate_script(request: ScriptRequest, background_tasks: BackgroundTa
             # Generate the full script
             script = await ai_handler.generate_script(
                 content=request.content,
+                template_name=request.template_name,
                 highlighted_concept=request.highlighted_concept,
                 previous_topic=request.previous_topic
             )
             
             # Validate the script
-            validation_results = text_processor.validate_script(script)
+            validation_results = text_processor.validate_script(
+                script,
+                template_name=request.template_name
+            )
             
             # If validation fails, try to improve the script
-            if not all(v["pass"] for v in validation_results.values()):
-                script = await ai_handler.improve_script(script, validation_results)
-                validation_results = text_processor.validate_script(script)
+            if validation_results.get('template_compliance'):
+                template_issues = [
+                    section for section, details in validation_results['template_compliance'].items()
+                    if not details['length_in_range']
+                ]
+                if template_issues:
+                    script = await ai_handler.improve_script(script, validation_results)
+                    validation_results = text_processor.validate_script(
+                        script,
+                        template_name=request.template_name
+                    )
             
             active_tasks[task_id] = {
                 "status": "completed",
@@ -124,10 +152,10 @@ async def upload_file(file: UploadFile = File(...)):
         )
 
 @app.post("/api/validate-script")
-async def validate_script(script: str):
-    """Validate a script against quality criteria."""
+async def validate_script(script: str, template_name: Optional[str] = None):
+    """Validate a script against quality criteria and optional template."""
     try:
-        validation_results = text_processor.validate_script(script)
+        validation_results = text_processor.validate_script(script, template_name)
         return JSONResponse({
             "status": "success",
             "validation": validation_results
@@ -137,6 +165,28 @@ async def validate_script(script: str):
         raise HTTPException(
             status_code=400,
             detail=f"Error validating script: {str(e)}"
+        )
+
+@app.post("/api/export-script")
+async def export_script(script: str, format: str = 'txt'):
+    """Export the script in various formats."""
+    try:
+        content, content_type = text_processor.format_script_for_export(script, format)
+        
+        headers = {
+            'Content-Disposition': f'attachment; filename="script.{format}"',
+            'Content-Type': content_type
+        }
+        
+        return Response(
+            content=content,
+            headers=headers
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Error exporting script: {str(e)}"
         )
 
 if __name__ == "__main__":

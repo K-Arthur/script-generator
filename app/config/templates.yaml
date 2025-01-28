@@ -1,0 +1,51 @@
+templates:
+  documentary:
+    name: "Documentary Style"
+    description: "A structured documentary script format"
+    structure:
+      - section: "Introduction"
+        description: "Hook the audience and introduce the topic"
+        length_range: [60, 100]
+      - section: "Main Content"
+        description: "Detailed exploration of the topic with evidence and examples"
+        length_range: [300, 800]
+      - section: "Conclusion"
+        description: "Summarize key points and provide closing thoughts"
+        length_range: [50, 100]
+
+  educational:
+    name: "Educational Content"
+    description: "A format focused on clear explanation and learning"
+    structure:
+      - section: "Learning Objectives"
+        description: "Clear statement of what viewers will learn"
+        length_range: [40, 80]
+      - section: "Concept Introduction"
+        description: "Basic overview of the topic"
+        length_range: [100, 200]
+      - section: "Detailed Explanation"
+        description: "Step-by-step breakdown with examples"
+        length_range: [300, 600]
+      - section: "Practice and Application"
+        description: "Real-world examples and exercises"
+        length_range: [150, 300]
+      - section: "Summary"
+        description: "Recap of key points"
+        length_range: [50, 100]
+
+  storytelling:
+    name: "Narrative Style"
+    description: "A narrative-driven format for engaging stories"
+    structure:
+      - section: "Setup"
+        description: "Establish the context and characters"
+        length_range: [80, 150]
+      - section: "Rising Action"
+        description: "Build tension and develop the story"
+        length_range: [200, 400]
+      - section: "Climax"
+        description: "Peak of the narrative"
+        length_range: [100, 200]
+      - section: "Resolution"
+        description: "Wrap up the story and provide closure"
+        length_range: [80, 150]
